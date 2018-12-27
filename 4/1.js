@@ -13,20 +13,43 @@ const guardSleepMinutes = guardTimes
     .sort((a, b) => b.sleepingMinutes - a.sleepingMinutes);
 const sleepiestGuard = guardTimes.find(g => g.guard === guardSleepMinutes[0].guard);
 
-const sleepMinutes = sleepiestGuard.sleeps
-    .map(s => createArrayRange(s.from, s.to))
-    .reduce((a, b) => a.concat(b), [])
-    .reduce((a, b) => { 
-        if (a.some(m => m.minute === b)) {
-            a.find(m => m.minute === b).count++;
-            return a;
-        } 
-        return a.concat({ minute: b, count: 1 });
-    }, [])
-    .sort((a, b) => b.count - a.count);
+const sleepiestGuardSleepMinutes = getGuardSleepMinutes(sleepiestGuard.sleeps);
 
 const guardNumber = +sleepiestGuard.guard.replace('#', '');
-console.log(sleepMinutes[0].minute * guardNumber);
+console.log(`Part 1: ${sleepiestGuardSleepMinutes[0].minute * guardNumber}`);
+
+const guardsSleepiestMinutes = guardTimes
+    .map(g => ({
+        guard: +g.guard.replace('#', ''),
+        mostSleepMinute: getGuardSleepMinutes(g.sleeps)[0]
+    }))
+    .sort((a, b) => {
+        if (b.mostSleepMinute === undefined) {
+            return -1;
+        }
+        if (a.mostSleepMinute === undefined) {
+            return 1;
+        }
+        return b.mostSleepMinute.count - a.mostSleepMinute.count
+    });
+
+const result2 = guardsSleepiestMinutes[0].guard * guardsSleepiestMinutes[0].mostSleepMinute.minute;
+
+console.log(`Part 2: ${result2}`);
+
+function getGuardSleepMinutes(sleeps) {
+    return sleeps
+        .map(s => createArrayRange(s.from, s.to))
+        .reduce((a, b) => a.concat(b), [])
+        .reduce((a, b) => { 
+            if (a.some(m => m.minute === b)) {
+                a.find(m => m.minute === b).count++;
+                return a;
+            } 
+            return a.concat({ minute: b, count: 1 });
+        }, [])
+        .sort((a, b) => b.count - a.count);
+}
 
 function createArrayRange(from, to) {
     let result = [];
