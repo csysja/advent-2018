@@ -5,10 +5,14 @@ const locationsClosestCoord = getLocationsClosestCoord(input);
 // console.log();
 const areaCount = getAreaCount(locationsClosestCoord);
 const finiteArea = areaCount.filter(a => isFinite(a.coord, input));
-console.log('finite area count...');
-console.log(finiteArea);
-console.log();
+// console.log('finite area count...');
+// console.log(finiteArea);
+// console.log();
 console.log(`Part 1: ${finiteArea[0].count}`);
+
+const totalDistances = getTotalDistances(input);
+const inRegion = totalDistances.filter(d => d.distance < 10000)
+console.log(`Part 2: ${inRegion.length}`);
 
 function isFinite(coord, coords) {
   return coords.some(c => coord.x < c.x && coord.y > c.y) // somthing top right of it
@@ -55,6 +59,24 @@ function getLocationsClosestCoord(input) {
   return result;
 }
 
+function getTotalDistances(input) {
+  const grid = getMinMaxArea(input);
+  let result = [];
+  for(let y = grid.min.y; y <= grid.max.y; y++) {  
+    for(let x = grid.min.x; x <= grid.max.x; x++) {
+      const position = {
+        x: x,
+        y: y
+      };
+      result.push({
+        position: position,
+        distance: getTotalDistance(position, input),
+      });
+    }
+  }
+  return result;
+}
+
 function drawGrid(input, locationsClosestCoord) {
   let line = '';
   const grid = getMinMaxArea(input);  
@@ -83,6 +105,10 @@ function getClosestCoord(position, input) {
     return null;
   }
   return locationByDistance[0].coord;
+}
+
+function getTotalDistance(position, input) {
+  return input.reduce((a, b) => a + getManhattanDistance(position, b), 0);
 }
 
 function getManhattanDistance(coord1, coord2) {
